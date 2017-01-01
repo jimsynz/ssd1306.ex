@@ -132,7 +132,7 @@ defmodule SSD1306.Commands do
   def vertical_and_right_horizontal_scroll!(pid), do: send_command(pid, @cmd_vertical_and_right_horizontal_scroll)
   def vertical_and_left_horizontal_scroll!(pid),  do: send_command(pid, @cmd_vertical_and_left_horizontal_scroll)
 
-  defp send_data(pid, << msb::integer-size(8), lsb::integer-size(8) >>), do: I2c.write(pid, <<@data_register, msb, lsb>>)
+  defp send_data(pid, buffer), do: I2c.write(pid, <<@data_register>> <> buffer)
   defp send_command(pid, byte), do: I2c.write(pid, <<@control_register, byte>>)
   defp send_commands(pid, commands) do
     Enum.reduce(commands, :ok, fn
@@ -141,9 +141,9 @@ defmodule SSD1306.Commands do
     end)
   end
 
-  defp send_buffer(pid, << _::integer-size(8), _::integer-size(8) >>=buffer), do: send_data(pid, buffer)
-  defp send_buffer(pid, << msb::integer-size(8), lsb::integer-size(8), rest::binary >>) do
-    with :ok <- send_data(pid, <<msb, lsb>>),
+  defp send_buffer(pid, buffer) when byte_size(buffer) < 512, do: send_data(pid, buffer)
+  defp send_buffer(pid, << data::binary-size(511), rest::binary >>) do
+    with :ok <- send_data(pid, data),
          :ok <- send_buffer(pid, rest),
          do: :ok
   end

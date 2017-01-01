@@ -13,7 +13,7 @@ defmodule SSD1306 do
 
   defp children do
     import Supervisor.Spec, warn: false
-    [ worker(SSD1306.Device, []) ]
+    [ worker(SSD1306.Device, [], restart: :transient) ]
   end
 
   defp options, do: [strategy: :simple_one_for_one, name: SSD1306.Supervisor]

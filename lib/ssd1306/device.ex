@@ -38,6 +38,11 @@ defmodule SSD1306.Device do
     {:ok, state}
   end
 
+  def terminate(_reason, %{i2c: i2c, reset: gpio}) do
+    I2c.release(i2c)
+    Gpio.release(gpio)
+  end
+
   def handle_call(:all_on, from, state) do
     buffer = all_on_buffer(state)
     handle_call({:display, buffer}, from, state)
